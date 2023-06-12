@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat App</title>
+  <style>
+    #messages {
+      height: 300px;
+      overflow-y: scroll;
+    }
+  </style>
+</head>
+<body>
+  <h1>Chat App</h1>
+
+  <div id="messages"></div>
+
+  <form id="message-form">
+    <input type="text" id="message" placeholder="Message" required>
+    <button type="submit">Send</button>
+  </form>
+
+  <script src="https://cdn.socket.io/4.3.1/socket.io.min.js"></script>
+
+  <script>
+
+fetch('messages.json')
+  .then(response => response.json())
+  .then(data => {
+    console.log(data); // Log the retrieved JSON data
+  })
+  .catch(error => {
+    console.error('Error:', error); // Log any errors that occurred during the fetch request
+  });
+
+
+
+    const socket = io();
+    var username = localStorage.getItem('username');
+
+    if (!username) {
+        username = prompt('Enter your username:');
+        localStorage.setItem('username', username);
+    }
+
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message');
+    const messagesDiv = document.getElementById('messages');
+
+    messageForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const message = messageInput.value;
+
+      socket.emit('message', {message: message, username: username});
+
+      messageInput.value = '';
+    });
+
+    socket.on('message', (data) => {
+      const messageElement = document.createElement('p');
+      messageElement.innerHTML = `<strong>${data.username}</strong>: ${data.message}`;
+      messagesDiv.appendChild(messageElement);
+    });
+
+    socket.emit('join', username);
+  </script>
+</body>
+</html>
