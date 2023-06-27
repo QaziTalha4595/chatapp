@@ -4,29 +4,59 @@
   <title>Chat App</title>
   <style>
     #messages {
-      height: 300px;
+      height: 80vh;
       overflow-y: scroll;
     }
   </style>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-  <h1>Chat App</h1>
+  <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h2 class="text-center">Chat App</h2>
+                <div id="chat-container" class="card">
+                    <div class="card-body">
+                        <ul id="chat-messages" class="list-unstyled"></ul>
+                    </div>
+                    <div class="card-footer">
+                      <form id="message-form">
+                        <!-- <input type="text" id="message" placeholder="Message" disabled required> -->
+                        <!-- <button id="submit" type="submit" disabled>Send</button> -->
+                 
+                        <div class="input-group">
+                            <input id="message" type="text" class="form-control" placeholder="Type your message..." disabled required >
+                            <div class="input-group-append">
+                                <button id="submit" type="submit" disabled class="btn btn-primary">Send</button>
+                            </div>
+                        </div>
+                      </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  <div id="messages"></div>
-
-  <form id="message-form">
-    <input type="text" id="message" placeholder="Message" required>
-    <button type="submit">Send</button>
-  </form>
-
-  <script src="https://cdn.socket.io/4.3.1/socket.io.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.0/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
+
+const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message');
+    const messagesDiv = document.getElementById('messages');
 
 fetch('messages.json')
   .then(response => response.json())
   .then(data => {
-    console.log(data); // Log the retrieved JSON data
+    data.forEach(e => {
+      var message = $('<li>').text(e.username + ': ' + e.message);
+            $('#chat-messages').append(message);
+    });
+     // Log the retrieved JSON data
+  })
+  .then(()=>{
+    document.getElementById('submit').disabled = false
+    document.getElementById('message').disabled = false
   })
   .catch(error => {
     console.error('Error:', error); // Log any errors that occurred during the fetch request
@@ -42,9 +72,7 @@ fetch('messages.json')
         localStorage.setItem('username', username);
     }
 
-    const messageForm = document.getElementById('message-form');
-    const messageInput = document.getElementById('message');
-    const messagesDiv = document.getElementById('messages');
+
 
     messageForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -57,9 +85,8 @@ fetch('messages.json')
     });
 
     socket.on('message', (data) => {
-      const messageElement = document.createElement('p');
-      messageElement.innerHTML = `<strong>${data.username}</strong>: ${data.message}`;
-      messagesDiv.appendChild(messageElement);
+      var message = $('<li>').text(data.username + ': ' + data.message);
+            $('#chat-messages').append(message);
     });
 
     socket.emit('join', username);
